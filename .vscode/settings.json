@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "cstddef": "cpp",
+        "vector": "cpp",
+        "string": "cpp",
+        "tuple": "cpp",
+        "fstream": "cpp"
+    }
+}
