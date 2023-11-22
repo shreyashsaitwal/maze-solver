@@ -4,6 +4,7 @@
         "vector": "cpp",
         "string": "cpp",
         "tuple": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "xstring": "cpp"
     }
 }
