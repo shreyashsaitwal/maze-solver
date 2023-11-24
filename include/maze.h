@@ -10,20 +10,16 @@ using namespace std;
 typedef tuple<int, int> Position;
 typedef tuple<int, int> Dimension;
 
-enum Action { UP, DOWN, LEFT, RIGHT };
-
 struct Node {
     Position position;
-    Action action;
-    Node *parent;
-    int path_cost = 0;
+    Node *parent = nullptr;
 };
 
 class Maze {
    private:
-    vector<tuple<Position, Action>> possible_moves(Position);
-    
-    int manhattan_distance(Position, Position);
+    vector<Position> possible_moves(Position);
+
+    static int manhattan_distance(Position, Position);
 
    public:
     // TODO: Remove public access
@@ -32,11 +28,11 @@ class Maze {
     Dimension dimensions;
     vector<vector<bool>> walls;
     vector<Node *> explored;
-    Node *solution = nullptr;
+    Node *solution;
 
     Maze(string);
     void solve();
-    // void print_solution();
+    void print_solution();
 };
 
 #endif
