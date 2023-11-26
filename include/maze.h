@@ -22,7 +22,7 @@ class Maze {
     Dimension dimensions;
     vector<vector<bool>> walls;
     vector<Node *> explored_states;
-    Node *solution;
+    Node *solution = nullptr;
 
     vector<Position> possible_moves(Position);
     static int manhattan_distance(Position, Position);

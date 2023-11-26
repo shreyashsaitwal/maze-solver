@@ -1,12 +1,12 @@
 #include "maze.h"
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <thread>
-#include <chrono>
 
-#include "utils.h"
 #include "rang.h"
+#include "utils.h"
 
 Maze::Maze(string maze_str) {
     auto lines = Utils::split_str(maze_str, "\n");
@@ -69,10 +69,12 @@ void Maze::solve() {
 
 void Maze::print_solution() {
     vector<Position> sol_pos;
-    auto node = this->solution;
-    while (node->parent != nullptr) {
-        sol_pos.push_back(node->position);
-        node = node->parent;
+    if (this->solution != nullptr) {
+        auto node = this->solution;
+        while (node->parent != nullptr) {
+            sol_pos.push_back(node->position);
+            node = node->parent;
+        }
     }
 
     vector<Position> expl_pos;
@@ -82,23 +84,30 @@ void Maze::print_solution() {
 
     int count = 0;
     while (count < expl_pos.size()) {
-        this->print_maze(vector<Position>(), vector<Position>(expl_pos.begin(), expl_pos.begin() + count));
+        this->print_maze(vector<Position>(),
+                         vector<Position>(expl_pos.begin(), expl_pos.begin() + count));
         this_thread::sleep_for(chrono::milliseconds(100));
         Utils::move_up_by(get<0>(this->dimensions));
         count++;
     }
 
-    count = 0;
-    while (count < sol_pos.size()) {
-        this->print_maze(vector<Position>(sol_pos.begin(), sol_pos.begin() + count), expl_pos);
-        this_thread::sleep_for(chrono::milliseconds(50));
-        Utils::move_up_by(get<0>(this->dimensions));
-        count++;
+    if (this->solution != nullptr) {
+        count = 0;
+        while (count < sol_pos.size()) {
+            this->print_maze(vector<Position>(sol_pos.begin(), sol_pos.begin() + count), expl_pos);
+            this_thread::sleep_for(chrono::milliseconds(50));
+            Utils::move_up_by(get<0>(this->dimensions));
+            count++;
+        }
     }
 
     this->print_maze(sol_pos, expl_pos);
     cout << endl;
-    cout << "Path length:     " << sol_pos.size() << endl;
+
+    if (this->solution != nullptr)
+        cout << "Path length:     " << sol_pos.size() << endl;
+    else
+        cout << "No solution found" << endl;
     cout << "Explored states: " << this->explored_states.size() << endl;
 }
 
@@ -106,11 +115,11 @@ void Maze::print_maze(vector<Position> solution_pos, vector<Position> explored_p
     for (int i = 0; i < this->walls.size(); i++) {
         for (int j = 0; j < this->walls[0].size(); j++) {
             Position pos = make_tuple(i, j);
-            auto is_sol_pos =
-                any_of(solution_pos.begin(), solution_pos.end(), [&pos](Position p) { return p == pos; });
-            auto is_expl_pos =
-                any_of(explored_pos.begin(), explored_pos.end(), [&pos](Position p) { return p == pos; });
-            
+            auto is_sol_pos = any_of(solution_pos.begin(), solution_pos.end(),
+                                     [&pos](Position p) { return p == pos; });
+            auto is_expl_pos = any_of(explored_pos.begin(), explored_pos.end(),
+                                      [&pos](Position p) { return p == pos; });
+
             if (pos == this->start) {
                 cout << rang::fg::black << rang::bg::magenta << " A " << rang::style::reset;
             } else if (pos == this->goal) {
