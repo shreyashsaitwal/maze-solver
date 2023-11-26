@@ -13,6 +13,7 @@ class Utils {
    public:
     static string read_file(const string);
     static vector<string> split_str(const string &, const string &);
+    static void move_up_by(int);
 };
 
 #endif

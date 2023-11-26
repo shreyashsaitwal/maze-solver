@@ -44,3 +44,7 @@ vector<string> Utils::split_str(const string &input, const string &delimiter) {
 
     return result;
 }
+
+void Utils::move_up_by(int n) {
+    cout << "\033[" << n << "A";
+}

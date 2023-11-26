@@ -17,19 +17,18 @@ struct Node {
 
 class Maze {
    private:
-    vector<Position> possible_moves(Position);
-
-    static int manhattan_distance(Position, Position);
-
-   public:
-    // TODO: Remove public access
     Position start;
     Position goal;
     Dimension dimensions;
     vector<vector<bool>> walls;
-    vector<Node *> explored;
+    vector<Node *> explored_states;
     Node *solution;
 
+    vector<Position> possible_moves(Position);
+    static int manhattan_distance(Position, Position);
+    void print_maze(vector<Position>, vector<Position>);
+
+   public:
     Maze(string);
     void solve();
     void print_solution();

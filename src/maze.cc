@@ -2,9 +2,11 @@
 
 #include <algorithm>
 #include <iostream>
-// #include <termcolor/termcolor.hpp>
+#include <thread>
+#include <chrono>
 
 #include "utils.h"
+#include "rang.h"
 
 Maze::Maze(string maze_str) {
     auto lines = Utils::split_str(maze_str, "\n");
@@ -47,13 +49,13 @@ void Maze::solve() {
             return;
         }
 
-        this->explored.push_back(node);
+        this->explored_states.push_back(node);
 
         auto moves = this->possible_moves(node->position);
         for (Position pos : moves) {
             auto neighbour = new Node{pos, node};
             auto is_explored =
-                any_of(this->explored.begin(), this->explored.end(),
+                any_of(this->explored_states.begin(), this->explored_states.end(),
                        [&neighbour](Node *n) { return n->position == neighbour->position; });
             auto is_in_frontier = any_of(frontier.begin(), frontier.end(), [&neighbour](Node *n) {
                 return n->position == neighbour->position;
@@ -73,25 +75,54 @@ void Maze::print_solution() {
         node = node->parent;
     }
 
+    vector<Position> expl_pos;
+    for (Node *node : this->explored_states) {
+        expl_pos.push_back(node->position);
+    }
+
+    int count = 0;
+    while (count < expl_pos.size()) {
+        this->print_maze(vector<Position>(), vector<Position>(expl_pos.begin(), expl_pos.begin() + count));
+        this_thread::sleep_for(chrono::milliseconds(100));
+        Utils::move_up_by(get<0>(this->dimensions));
+        count++;
+    }
+
+    count = 0;
+    while (count < sol_pos.size()) {
+        this->print_maze(vector<Position>(sol_pos.begin(), sol_pos.begin() + count), expl_pos);
+        this_thread::sleep_for(chrono::milliseconds(50));
+        Utils::move_up_by(get<0>(this->dimensions));
+        count++;
+    }
+
+    this->print_maze(sol_pos, expl_pos);
+    cout << endl;
+    cout << "Path length:     " << sol_pos.size() << endl;
+    cout << "Explored states: " << this->explored_states.size() << endl;
+}
+
+void Maze::print_maze(vector<Position> solution_pos, vector<Position> explored_pos) {
     for (int i = 0; i < this->walls.size(); i++) {
         for (int j = 0; j < this->walls[0].size(); j++) {
             Position pos = make_tuple(i, j);
-            auto is_sol_path =
-                any_of(sol_pos.begin(), sol_pos.end(), [&pos](Position p) { return p == pos; });
+            auto is_sol_pos =
+                any_of(solution_pos.begin(), solution_pos.end(), [&pos](Position p) { return p == pos; });
+            auto is_expl_pos =
+                any_of(explored_pos.begin(), explored_pos.end(), [&pos](Position p) { return p == pos; });
+            
             if (pos == this->start) {
-                cout << "A";
-                // cout << termcolor::black << termcolor::on_purple << " A " << termcolor::reset;
+                cout << rang::fg::black << rang::bg::magenta << " A " << rang::style::reset;
             } else if (pos == this->goal) {
-                cout << "B";
-                // cout << termcolor::black << termcolor::on_cyan << " B " << termcolor::reset;
+                cout << rang::fg::black << rang::bg::blue << " B " << rang::style::reset;
             } else if (this->walls[i][j]) {
-                cout << "#";
-                // cout << termcolor::on_bright_black << "   " << termcolor::reset;
-            } else if (is_sol_path) {
-                cout << "+";
-                // cout << termcolor::on_green << "   " << termcolor::reset;
+                cout << "▓▓▓" << rang::style::reset;
+            } else if (is_sol_pos) {
+                cout << rang::fg::black << rang::bg::green << " • " << rang::style::reset;
+            } else if (is_expl_pos) {
+                cout << rang::fg::black << rang::bg::yellow << " · " << rang::style::reset;
             } else {
-                cout << " ";
+                cout << " · ";
             }
         }
         cout << endl;
