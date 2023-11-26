@@ -4,10 +4,6 @@
 #include <iostream>
 #include <sstream>
 
-string to_string(tuple<int, int> tup) {
-    return "(" + to_string(get<0>(tup)) + ", " + to_string(get<1>(tup)) + ")";
-}
-
 string Utils::read_file(string file_path) {
     ifstream input_file(file_path);
     if (!input_file.is_open()) {

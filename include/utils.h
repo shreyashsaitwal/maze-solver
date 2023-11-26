@@ -7,8 +7,6 @@
 
 using namespace std;
 
-string to_string(tuple<int, int>);
-
 class Utils {
    public:
     static string read_file(const string);
