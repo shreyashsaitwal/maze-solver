@@ -10,6 +10,15 @@
 #include "rang.h"
 #include "utils.h"
 
+namespace std {
+    template <>
+    struct hash<Position> {
+        std::size_t operator()(const Position& pos) const {
+            return std::hash<int>()(std::get<0>(pos)) ^ std::hash<int>()(std::get<1>(pos));
+        }
+    };
+}
+
 Maze::Maze(string maze_str) {
     auto lines = Utils::split_str(maze_str, "\n");
 
@@ -73,12 +82,15 @@ void Maze::solve_a_star() {
     auto cmp = [](Node* left, Node* right) { return left->f > right->f; };
     priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
     unordered_set<Position> explored;
+    unordered_set<Position> in_frontier;
 
     Node* start_node = new Node{this->start};
     start_node->h = a_star_heuristic(this->start);
-    start_node->f = start_node->g + start_node->h;
     frontier.push(start_node);
-
+    in_frontier.insert(start_node->position);
+    frontier.push(start_node);
+        Node* node = frontier.top();
+        in_frontier.erase(node->position);
     while (!frontier.empty()) {
         Node* node = frontier.top();
         frontier.pop();
@@ -99,15 +111,13 @@ void Maze::solve_a_star() {
 
             Node* neighbour = new Node{pos, node};
             neighbour->g = node->g + 1;
-            neighbour->h = a_star_heuristic(pos);
-            neighbour->f = neighbour->g + neighbour->h;
-
-            auto is_in_frontier = any_of(frontier.c.begin(), frontier.c.end(), [&neighbour](Node* n) {
-                return n->position == neighbour->position;
-            });
-
-            if (!is_in_frontier) {
+            if (in_frontier.find(pos) == in_frontier.end()) {
                 frontier.push(neighbour);
+                in_frontier.insert(pos);
+            }
+            if (in_frontier.find(pos) == in_frontier.end()) {
+                frontier.push(neighbour);
+                in_frontier.insert(pos);
             }
         }
     }
