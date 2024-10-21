@@ -89,6 +89,7 @@ void Maze::solve_a_star() {
         }
 
         explored.insert(node->position);
+        this->explored_states.push_back(node);
 
         auto moves = this->possible_moves(node->position);
         for (Position pos : moves) {
