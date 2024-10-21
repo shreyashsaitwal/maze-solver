@@ -1,19 +1,19 @@
 # Maze Solver
 
-
-
 ## Building from source
 
 ### Prerequisites
-- [Make](https://www.gnu.org/software/make/)
-- [CMake](https://cmake.org/) (>= 3.10)
+- [Python](https://www.python.org/) (>= 3.6)
+- [pip](https://pip.pypa.io/en/stable/)
 
 ### Building
 ```bash
-mkdir build
-cd build
-cmake ..
-cmake --build .
+pip install .
 ```
 
-This will produce `maze-solver` executable in `build` directory.
+### Running
+```bash
+maze_solver
+```
+
+This will run the maze solver and prompt you to select a maze to solve.
