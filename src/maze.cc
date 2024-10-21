@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <queue>
+#include <unordered_set>
 
 #include "rang.h"
 #include "utils.h"
@@ -65,6 +67,53 @@ void Maze::solve() {
             }
         }
     }
+}
+
+void Maze::solve_a_star() {
+    auto cmp = [](Node* left, Node* right) { return left->f > right->f; };
+    priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
+    unordered_set<Position> explored;
+
+    Node* start_node = new Node{this->start};
+    start_node->h = a_star_heuristic(this->start);
+    start_node->f = start_node->g + start_node->h;
+    frontier.push(start_node);
+
+    while (!frontier.empty()) {
+        Node* node = frontier.top();
+        frontier.pop();
+
+        if (node->position == this->goal) {
+            this->solution = node;
+            return;
+        }
+
+        explored.insert(node->position);
+
+        auto moves = this->possible_moves(node->position);
+        for (Position pos : moves) {
+            if (explored.find(pos) != explored.end()) {
+                continue;
+            }
+
+            Node* neighbour = new Node{pos, node};
+            neighbour->g = node->g + 1;
+            neighbour->h = a_star_heuristic(pos);
+            neighbour->f = neighbour->g + neighbour->h;
+
+            auto is_in_frontier = any_of(frontier.c.begin(), frontier.c.end(), [&neighbour](Node* n) {
+                return n->position == neighbour->position;
+            });
+
+            if (!is_in_frontier) {
+                frontier.push(neighbour);
+            }
+        }
+    }
+}
+
+int Maze::a_star_heuristic(Position pos) {
+    return manhattan_distance(pos, this->goal);
 }
 
 void Maze::print_solution() {

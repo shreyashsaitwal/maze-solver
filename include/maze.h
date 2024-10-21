@@ -13,6 +13,9 @@ typedef tuple<int, int> Dimension;
 struct Node {
     Position position;
     Node *parent = nullptr;
+    int g = 0; // Cost from start to this node
+    int h = 0; // Heuristic cost from this node to goal
+    int f = 0; // Total cost (g + h)
 };
 
 class Maze {
@@ -31,6 +34,8 @@ class Maze {
    public:
     Maze(string);
     void solve();
+    void solve_a_star();
+    int a_star_heuristic(Position);
     void print_solution();
 };
 

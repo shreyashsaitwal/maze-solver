@@ -40,6 +40,26 @@ int main() {
     }
 
     Maze maze(maze_str);
-    maze.solve();
+
+    cout << "Select the algorithm to solve the maze: " << endl;
+    cout << "1. Basic Search" << endl;
+    cout << "2. A* Search" << endl;
+    cout << "Enter your choice: ";
+
+    int algo_choice;
+    cin >> algo_choice;
+
+    switch (algo_choice) {
+        case 1:
+            maze.solve();
+            break;
+        case 2:
+            maze.solve_a_star();
+            break;
+        default:
+            cout << "Invalid choice!" << endl;
+            return 1;
+    }
+
     maze.print_solution();
 }
