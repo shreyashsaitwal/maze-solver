@@ -10,15 +10,6 @@
 #include "rang.h"
 #include "utils.h"
 
-namespace std {
-    template <>
-    struct hash<Position> {
-        std::size_t operator()(const Position& pos) const {
-            return std::hash<int>()(std::get<0>(pos)) ^ std::hash<int>()(std::get<1>(pos));
-        }
-    };
-}
-
 Maze::Maze(string maze_str) {
     auto lines = Utils::split_str(maze_str, "\n");
 
@@ -40,59 +31,18 @@ Maze::Maze(string maze_str) {
     this->dimensions = make_tuple(lines.size(), lines[0].size());
 }
 
-void Maze::solve() {
-    vector<Node *> frontier;
-    frontier.push_back(new Node{this->start});
-
-    while (!frontier.empty()) {
-        if (frontier.size() > 1) {
-            sort(frontier.begin(), frontier.end(), [this](Node *n1, Node *n2) {
-                return Maze::manhattan_distance(this->goal, n1->position) >
-                       Maze::manhattan_distance(this->goal, n2->position);
-            });
-        }
-
-        auto node = frontier.back();
-        frontier.pop_back();
-
-        if (node->position == this->goal) {
-            this->solution = node;
-            return;
-        }
-
-        this->explored_states.push_back(node);
-
-        auto moves = this->possible_moves(node->position);
-        for (Position pos : moves) {
-            auto neighbour = new Node{pos, node};
-            auto is_explored =
-                any_of(this->explored_states.begin(), this->explored_states.end(),
-                       [&neighbour](Node *n) { return n->position == neighbour->position; });
-            auto is_in_frontier = any_of(frontier.begin(), frontier.end(), [&neighbour](Node *n) {
-                return n->position == neighbour->position;
-            });
-            if (!is_explored && !is_in_frontier) {
-                frontier.push_back(neighbour);
-            }
-        }
-    }
-}
-
-void Maze::solve_a_star() {
-    auto cmp = [](Node* left, Node* right) { return left->f > right->f; };
-    priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
+void Maze::solve(function<int(Position)> heuristic) {
+    auto cmp = [](shared_ptr<Node> left, shared_ptr<Node> right) { return left->f > right->f; };
+    priority_queue<shared_ptr<Node>, vector<shared_ptr<Node>>, decltype(cmp)> frontier(cmp);
     unordered_set<Position> explored;
-    unordered_set<Position> in_frontier;
 
-    Node* start_node = new Node{this->start};
-    start_node->h = a_star_heuristic(this->start);
+    shared_ptr<Node> start_node = make_shared<Node>(Node{this->start});
+    start_node->h = heuristic ? heuristic(this->start) : manhattan_distance(this->start, this->goal);
+    start_node->f = start_node->g + start_node->h;
     frontier.push(start_node);
-    in_frontier.insert(start_node->position);
-    frontier.push(start_node);
-        Node* node = frontier.top();
-        in_frontier.erase(node->position);
+
     while (!frontier.empty()) {
-        Node* node = frontier.top();
+        shared_ptr<Node> node = frontier.top();
         frontier.pop();
 
         if (node->position == this->goal) {
@@ -109,15 +59,17 @@ void Maze::solve_a_star() {
                 continue;
             }
 
-            Node* neighbour = new Node{pos, node};
+            shared_ptr<Node> neighbour = make_shared<Node>(Node{pos, node});
             neighbour->g = node->g + 1;
-            if (in_frontier.find(pos) == in_frontier.end()) {
+            neighbour->h = heuristic ? heuristic(pos) : manhattan_distance(pos, this->goal);
+            neighbour->f = neighbour->g + neighbour->h;
+
+            auto is_in_frontier = any_of(frontier.c.begin(), frontier.c.end(), [&neighbour](shared_ptr<Node> n) {
+                return n->position == neighbour->position;
+            });
+
+            if (!is_in_frontier) {
                 frontier.push(neighbour);
-                in_frontier.insert(pos);
-            }
-            if (in_frontier.find(pos) == in_frontier.end()) {
-                frontier.push(neighbour);
-                in_frontier.insert(pos);
             }
         }
     }
@@ -138,7 +90,7 @@ void Maze::print_solution() {
     }
 
     vector<Position> expl_pos;
-    for (Node *node : this->explored_states) {
+    for (auto node : this->explored_states) {
         expl_pos.push_back(node->position);
     }
 

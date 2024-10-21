@@ -21,13 +21,13 @@ int main() {
     string maze_path;
     switch (choice) {
         case 1:
-            maze_str = Utils::read_file("/data/College/sy/fds/maze-solver/mazes/maze1.txt");
+            maze_str = Utils::read_file("../mazes/maze1.txt");
             break;
         case 2:
-            maze_str = Utils::read_file("/data/College/sy/fds/maze-solver/mazes/maze2.txt");
+            maze_str = Utils::read_file("../mazes/maze2.txt");
             break;
         case 3:
-            maze_str = Utils::read_file("/data/College/sy/fds/maze-solver/mazes/maze3.txt");
+            maze_str = Utils::read_file("../mazes/maze3.txt");
             break;
         case 4:
             cout << "Enter path to your maze.txt file: ";
