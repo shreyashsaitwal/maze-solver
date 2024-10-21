@@ -4,6 +4,8 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <memory>
+#include <functional>
 
 using namespace std;
 
@@ -12,7 +14,10 @@ typedef tuple<int, int> Dimension;
 
 struct Node {
     Position position;
-    Node *parent = nullptr;
+    shared_ptr<Node> parent = nullptr;
+    int g = 0; // Cost from start to this node
+    int h = 0; // Heuristic cost from this node to goal
+    int f = 0; // Total cost (g + h)
 };
 
 class Maze {
@@ -21,8 +26,8 @@ class Maze {
     Position goal;
     Dimension dimensions;
     vector<vector<bool>> walls;
-    vector<Node *> explored_states;
-    Node *solution = nullptr;
+    vector<shared_ptr<Node>> explored_states;
+    shared_ptr<Node> solution = nullptr;
 
     vector<Position> possible_moves(Position);
     static int manhattan_distance(Position, Position);
@@ -30,7 +35,8 @@ class Maze {
 
    public:
     Maze(string);
-    void solve();
+    void solve(function<int(Position)> heuristic = nullptr);
+    int a_star_heuristic(Position);
     void print_solution();
 };
 

@@ -40,6 +40,24 @@ int main() {
     }
 
     Maze maze(maze_str);
-    maze.solve();
+
+    cout << "Select the algorithm you want to use: " << endl;
+    cout << "1. Basic Search" << endl;
+    cout << "2. A* Search" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    switch (choice) {
+        case 1:
+            maze.solve();
+            break;
+        case 2:
+            maze.solve([&maze](Position pos) { return maze.a_star_heuristic(pos); });
+            break;
+        default:
+            cout << "Invalid choice!" << endl;
+            return 1;
+    }
+
     maze.print_solution();
 }
